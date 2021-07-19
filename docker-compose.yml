@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  mysql_main:
+    image: mysql_main
+    container_name: mysql_main
+    build:
+      context: ./main
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./main/mysql_main.env
+    restart: "no"
+    ports:
+      - 4406:3306
+    volumes:
+      - ./main/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - ./main_data:/var/lib/mysql
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.4
+    # https://stackoverflow.com/questions/55559386/how-to-fix-mbind-operation-not-permitted-in-mysql-error-log
+    cap_add:
+      - SYS_NICE
+
+  mysql_replicator:
+    image: mysql_replicator
+    container_name: mysql_replicator
+    build:
+      context: ./replicator
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./replicator/mysql_replicator.env
+    restart: "no"
+    ports:
+      - 5506:3306
+    depends_on:
+      - mysql_main
+    volumes:
+      - ./replicator/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - ./replicator_data:/var/lib/mysql
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
+    # https://stackoverflow.com/questions/55559386/how-to-fix-mbind-operation-not-permitted-in-mysql-error-log
+    cap_add:
+      - SYS_NICE
+# https://stackoverflow.com/questions/67318361/docker-compose-ignoring-ipv4-address-in-container
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
