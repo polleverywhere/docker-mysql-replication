@@ -1,0 +1,3 @@
+echo docker run -it --network docker-mysql-master-slave_vpcbr gh-ost /tmp/gh-ost-release/gh-ost "$@"
+docker run -it --network docker-mysql-master-slave_vpcbr gh-ost /tmp/gh-ost-release/gh-ost "$@"
+
